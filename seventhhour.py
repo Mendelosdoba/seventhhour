@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.simpledialog
+from tkinter import messagebox
 from datetime import datetime, timedelta
 from zmanim.util.geo_location import GeoLocation    
 from geopy.geocoders import Nominatim  # You need to install geopy
@@ -12,6 +13,8 @@ from pytz import timezone
 from zmanim.zmanim_calendar import ZmanimCalendar
 from typing import Optional
 calendar = ZmanimCalendar()
+
+
 def hours_in_week(day_of_week, hour_of_day):
     # Define the number of hours in a day and a week
     hours_per_day = 24
@@ -52,6 +55,8 @@ elif int(result) % 7 == 5:
 elif int(result) % 7 == 6:
     print("chama")
 
+    
+
 def find_madim_occurrences():
     chama_occurrences = []
     
@@ -86,79 +91,44 @@ else:
 # initialize Nominatim API 
 geolocator = Nominatim(user_agent="your_unique_user_agent") 
   
-# input as a geek 
-lad = str(input("type location "))
-print("Location address:", lad) 
-  
-# getting Latitude and Longitude 
-location = geolocator.geocode(lad) 
-  
-print("Latitude and Longitude of the said address:") 
+place = str(input("type location "))
+print("Location address:", place) 
+location = geolocator.geocode(place)
 print((location.latitude, location.longitude)) 
-latitude = location.latitude
-longitude = location.longitude
-print(latitude)
-print(longitude)
-obj = TimezoneFinder() 
-  
-# returns  
-result = obj.timezone_at(lng=location.longitude, lat=location.latitude) 
-
-print("hello")
-print(result)
-print("Time Zone : ", result) 
-
-
 year = int(input("Enter the year: "))
 month = int(input("Enter the month: "))
 day = int(input("Enter the day: "))
+date = datetime(year, month, day)
+print(date)
+from timezonefinder import TimezoneFinder
+obj = TimezoneFinder()
+result = obj.timezone_at(lng=location.longitude, lat=location.latitude)
+print(result)
+geo_location = GeoLocation(place, location.latitude, location.longitude, result)
+calendar = ZmanimCalendar(geo_location=geo_location)
 
-yom = datetime(year, month, day)
-print(yom)
-timezone = pytz.timezone(result)
-print(timezone)
-# Create a ZmanimCalendar instance
-calendar = ZmanimCalendar()
-
-# Get the chatzos time for the specified date and time
 chatzos_time: Optional[datetime] = calendar.chatzos()
 
-# Check if chatzos_time is not None (i.e., it was successfully calculated)
 if chatzos_time is not None:
-    print("Chatzos Time:", chatzos_time)
+    print("Chatzos Time:", chatzos_time.strftime("%Y-%m-%d %I:%M:%S %p %Z"))
+    
+    adjusted_time_6_hours = chatzos_time + timedelta(hours=6)
+    adjusted_time_7_hours = chatzos_time + timedelta(hours=7)
+    print("Chatzos Time:", chatzos_time.strftime("%Y-%m-%d %I:%M:%S %p %Z"))
+    print("We don't make kiddush between", adjusted_time_6_hours.strftime("%Y-%m-%d %I:%M:%S %p %Z"), "&", adjusted_time_7_hours.strftime("%Y-%m-%d %I:%M:%S %p %Z"))
+    
 else:
     print("Chatzos Time not available for the specified date and time.")
-
-
-netz_time: Optional[datetime] = calendar.hanetz()
-
-if netz_time is not None:
-    print("netz Time:", netz_time)
+shkia_time: Optional[datetime] = calendar.shkia()
+sof_zman:   datetime = calendar.sof_zman_shma_gra()
+if sof_zman is not None:
+    print("zof_zman", sof_zman)
+if shkia_time is not None:
+    print("shkia:", shkia_time)
 else:
     print("netz Time not available for the specified date and time.")
 
 
 
-#=> zmanim.zmanim_calendar.ZmanimCalendar(candle_lighting_offset=18, geo_location=zmanim.util.geo_location.GeoLocation(name='Greenwich, England', latitude=51.4772, longitude=0.0, time_zone=tzfile('/usr/share/zoneinfo/GMT'), elevation=0.0), date=datetime.datetime(2018, 8, 26, 11, 40, 29, 334774), calculator=<zmanim.util.noaa_calculator.NOAACalculator object at 0x10bbf7710>)
 
 
-# Geocode a location (convert a city name to coordinates)
-
-# Create the tkinter window
-root = tk.Tk()
-root.geometry("400x400")
-
-def exactly_chatzos():
-    city = tk.simpledialog.askstring("Enter City", "Which city are you located in?")
-def mean_chatzos():
-    city = tk.simpledialog.askstring("Enter City", "Which city are you located in?")
-
-button1 = tk.Button(root, text="exactly chatzos", command=exactly_chatzos)
-button1.pack()
-
-# Create the "Chasidim" button
-button2 = tk.Button(root, text="mean chatzos", command=mean_chatzos)
-button2.pack()
-
-# Start the tkinter main loop
-root.mainloop()
