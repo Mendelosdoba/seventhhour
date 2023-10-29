@@ -98,7 +98,7 @@ print((location.latitude, location.longitude))
 year = int(input("Enter the year: "))
 month = int(input("Enter the month: "))
 day = int(input("Enter the day: "))
-date = datetime(year, month, day)
+date = (datetime(year, month, day))
 print(date)
 from timezonefinder import TimezoneFinder
 obj = TimezoneFinder()
@@ -114,19 +114,64 @@ if chatzos_time is not None:
     
     adjusted_time_6_hours = chatzos_time + timedelta(hours=6)
     adjusted_time_7_hours = chatzos_time + timedelta(hours=7)
-    print("Chatzos Time:", chatzos_time.strftime("%Y-%m-%d %I:%M:%S %p %Z"))
-    print("We don't make kiddush between", adjusted_time_6_hours.strftime("%Y-%m-%d %I:%M:%S %p %Z"), "&", adjusted_time_7_hours.strftime("%Y-%m-%d %I:%M:%S %p %Z"))
+    print("Chatzos Time:", chatzos_time.strftime("%I:%M:%S %p"))
+    print("We don't make kiddush between", adjusted_time_6_hours.strftime("%I:%M:%S %p"), "&", adjusted_time_7_hours.strftime("%I:%M:%S %p"))
     
 else:
     print("Chatzos Time not available for the specified date and time.")
-shkia_time: Optional[datetime] = calendar.shkia()
-sof_zman:   datetime = calendar.sof_zman_shma_gra()
-if sof_zman is not None:
-    print("zof_zman", sof_zman)
-if shkia_time is not None:
-    print("shkia:", shkia_time)
-else:
-    print("netz Time not available for the specified date and time.")
+
+
+
+import datetime
+delta = datetime.timedelta(days=1)
+year = int(input("Enter the year: "))
+month = 1
+day = 1
+date = datetime.date(year, month, day)
+end_date = datetime.date(year, 12, 31)
+list = []
+cha = []
+hours = []
+mil = 0
+num_days = 0
+while date <= end_date:
+    num_days += 1
+    calendar.date = date    # <----  you need to reset the zmanimcalendar date on each iteration
+    chatzos_time = calendar.chatzos()
+    print(chatzos_time.timestamp())
+    milliseconds = int(round(chatzos_time.timestamp()*1000))
+    mil += milliseconds
+    # print(datetime.datetime.fromtimestamp(milliseconds/1000.0))
+    cha.append(chatzos_time)
+    list.append(chatzos_time.strftime("%H:%M:%S"))
+    hours.append(chatzos_time.strftime("%H"))
+    # print(date, chatzos_time.strftime("%H:%M:%S"), end="\n")
+    date += delta
+total_duration = timedelta()
+total_hours = 0
+total_minutes = 0
+# print(num_days)
+print(mil)
+# Iterate through chatzos_times
+for chatzos_time in cha:
+    total_hours += chatzos_time.hour
+    total_minutes += chatzos_time.minute
+average = mil // num_days
+average = datetime.datetime.fromtimestamp(average/1000.0)
+formatted_time = average.strftime("%H:%M:%S")
+new_time = average + datetime.timedelta(hours=6)
+new_time1 = average + datetime.timedelta(hours=7)
+new_time = new_time.strftime("%I:%M:%S %p")
+new_time1 = new_time1.strftime("%I:%M:%S %p")
+print(f"average chatzos don't make kiddush between {new_time} and {new_time1}")
+
+# Calculate the average hour and minute
+
+
+
+
+
+    
 
 
 
