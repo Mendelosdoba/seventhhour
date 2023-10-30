@@ -6,8 +6,10 @@ from zmanim.util.geo_location import GeoLocation
 from geopy.geocoders import Nominatim  # You need to install geopy
 from geopy.distance import geodesic
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
-from timezonefinder import TimezoneFinder 
-import pytz
+from timezonefinder import TimezoneFinder
+from zmanim.util.math_helper import MathHelper
+# from timezonefinder import TimezoneFinder 
+# import pytz
 from pytz import timezone 
 # Create a geocoder instance (in this case, Nominatim)
 from zmanim.zmanim_calendar import ZmanimCalendar
@@ -69,11 +71,11 @@ def find_madim_occurrences():
     return chama_occurrences
 
 # Example usage
-chama_times = find_madim_occurrences()
+madim_times = find_madim_occurrences()
 
-if chama_times:
-    print("Chama occurrences:")
-    for day, hour in chama_times:
+if madim_times:
+    print("Madim occurrences:")
+    for day, hour in madim_times:
         print(f"Day {day}, Hour {hour}")
 else:
     print("No chama occurrences found.")
@@ -100,7 +102,7 @@ month = int(input("Enter the month: "))
 day = int(input("Enter the day: "))
 date = (datetime(year, month, day))
 print(date)
-from timezonefinder import TimezoneFinder
+
 obj = TimezoneFinder()
 result = obj.timezone_at(lng=location.longitude, lat=location.latitude)
 print(result)
@@ -129,41 +131,84 @@ month = 1
 day = 1
 date = datetime.date(year, month, day)
 end_date = datetime.date(year, 12, 31)
-list = []
-cha = []
-hours = []
+
 mil = 0
 num_days = 0
+start_time = "00:00:00"
 while date <= end_date:
     num_days += 1
-    calendar.date = date    # <----  you need to reset the zmanimcalendar date on each iteration
+    calendar.date = date 
     chatzos_time = calendar.chatzos()
-    print(chatzos_time.timestamp())
-    milliseconds = int(round(chatzos_time.timestamp()*1000))
+    chatzos_time_str = chatzos_time.strftime("%H:%M:%S")
+    
+     #print(chatzos_time.timestamp())
+  
+    from datetime import datetime
+    midnight = datetime.strptime(start_time, "%H:%M:%S")
+    # print(midnight)
+    t2 = datetime.strptime(chatzos_time_str, "%H:%M:%S")
+    # print(t2)
+    delta1 = t2 - midnight
+    print('delta1',delta1)
+    milliseconds = delta1.total_seconds()
+    print('ms',milliseconds)
     mil += milliseconds
-    # print(datetime.datetime.fromtimestamp(milliseconds/1000.0))
-    cha.append(chatzos_time)
-    list.append(chatzos_time.strftime("%H:%M:%S"))
-    hours.append(chatzos_time.strftime("%H"))
-    # print(date, chatzos_time.strftime("%H:%M:%S"), end="\n")
     date += delta
-total_duration = timedelta()
-total_hours = 0
-total_minutes = 0
+    # print(date, chatzos_time.strftime("%H:%M:%S"), end="\n")
+    
 # print(num_days)
-print(mil)
+print("num_days", num_days)
 # Iterate through chatzos_times
-for chatzos_time in cha:
-    total_hours += chatzos_time.hour
-    total_minutes += chatzos_time.minute
-average = mil // num_days
-average = datetime.datetime.fromtimestamp(average/1000.0)
-formatted_time = average.strftime("%H:%M:%S")
-new_time = average + datetime.timedelta(hours=6)
-new_time1 = average + datetime.timedelta(hours=7)
-new_time = new_time.strftime("%I:%M:%S %p")
-new_time1 = new_time1.strftime("%I:%M:%S %p")
-print(f"average chatzos don't make kiddush between {new_time} and {new_time1}")
+print("mil", mil)
+mil -= 856800
+print("mil", mil)
+average =  mil // num_days
+print("average", round(average))
+
+
+
+# In the timezone 'Europe/Madrid', the days in which the DST change is made in 2021 are 28/03/2021 and 31/10/2021
+#is_dst_change(day=datetime.datetime(year=2021, month=3, day=28), timezone = 'Europe/Madrid')  # This should return True
+
+
+
+
+
+def seconds_to_time(average):
+    hours, remainder = divmod(average, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    # Determine whether it's AM or PM
+    period = "am" if hours < 12 else "pm"
+
+    # Convert to 12-hour format
+    if hours == 0:
+        hours = 12
+    elif hours > 12:
+        hours -= 12
+
+    
+    return f"{int(hours):02d}:{int(minutes):02d} {period}"
+time_representation = seconds_to_time(average)
+print("time_representation", time_representation)
+seconds = average
+
+seconds = seconds % (24 * 3600)
+hour = seconds // 3600
+seconds %= 3600
+minutes = seconds // 60
+seconds %= 60
+
+print("%d:%02d:%02d" % (hour, minutes, seconds))
+print("%d:%02d:%02d" % (hour+7, minutes, seconds))
+
+print(f"we don't make kiddush between {int(hour+6):02d}:{int(minutes):02d}:{int(seconds):02d} & {int(hour+7):02d}:{int(minutes):02d}:{int(seconds):02d} for {place}")
+#formatted_time = average.strftime("%H:%M:%S")
+#new_time = average + datetime.timedelta(hours=6)
+#new_time1 = average + datetime.timedelta(hours=7)
+#new_time = new_time.strftime("%I:%M:%S %p")
+#new_time1 = new_time1.strftime("%I:%M:%S %p")
+#print(f"average chatzos don't make kiddush between {new_time} and {new_time1}")
 
 # Calculate the average hour and minute
 
@@ -172,8 +217,3 @@ print(f"average chatzos don't make kiddush between {new_time} and {new_time1}")
 
 
     
-
-
-
-
-
