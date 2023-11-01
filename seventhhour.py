@@ -8,7 +8,11 @@ from geopy.distance import geodesic
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from timezonefinder import TimezoneFinder
 from zmanim.util.math_helper import MathHelper
+from dateutil import tz
+from itertools import groupby
 # from timezonefinder import TimezoneFinder 
+
+
 # import pytz
 from pytz import timezone 
 # Create a geocoder instance (in this case, Nominatim)
@@ -31,8 +35,8 @@ def hours_in_week(day_of_week, hour_of_day):
 
 # Example usage
 
-day =  int(input("Please enter day number: ")) # Wednesday (0-based index)
-hour = int(input("Please enter hour number: "))  # 2:00 PM
+day =  int(input("Please enter day of week in in 1-7 format: ")) # Wednesday (0-based index)
+hour = int(input("Please enter hour number 1-24: "))  # 2:00 PM
 result = hours_in_week(day, hour)
 
 if result is not None:
@@ -100,7 +104,7 @@ print((location.latitude, location.longitude))
 year = int(input("Enter the year: "))
 month = int(input("Enter the month: "))
 day = int(input("Enter the day: "))
-date = (datetime(year, month, day))
+date = datetime(year, month, day)
 print(date)
 
 obj = TimezoneFinder()
@@ -117,12 +121,26 @@ if chatzos_time is not None:
     adjusted_time_6_hours = chatzos_time + timedelta(hours=6)
     adjusted_time_7_hours = chatzos_time + timedelta(hours=7)
     print("Chatzos Time:", chatzos_time.strftime("%I:%M:%S %p"))
-    print("We don't make kiddush between", adjusted_time_6_hours.strftime("%I:%M:%S %p"), "&", adjusted_time_7_hours.strftime("%I:%M:%S %p"))
+    print("We don't make kiddush between", adjusted_time_6_hours.strftime("%I:%M:%S %p"), "&", adjusted_time_7_hours.strftime("%I:%M:%S %p"), "if we go by exact chatzos")
     
 else:
     print("Chatzos Time not available for the specified date and time.")
 
-
+selected_tz = tz.gettz(result)
+start_date = datetime(year, 1, 1)
+end_date = datetime(year, 12, 31)
+date_list = [start_date + timedelta(days=x) for x in range((end_date-start_date).days+1)]
+dst_groups = groupby(date_list, lambda d:selected_tz.dst(datetime(year, d.month, d.day)))
+#lambda short way to write function
+#how to group datelist by running selected_tz with d parameter which we will give 
+#take 2 parameters date_list and how to group list by dst function . the function has d parameter
+dst_counts = [list([offset, len(list(g))]) for offset, g in dst_groups]
+print("S")
+extra_seconds = 0
+print(dst_counts)
+for i, (offset, count) in enumerate(dst_counts):   
+    if i == 1:
+        extra_seconds += int(count)
 
 import datetime
 delta = datetime.timedelta(days=1)
@@ -149,9 +167,9 @@ while date <= end_date:
     t2 = datetime.strptime(chatzos_time_str, "%H:%M:%S")
     # print(t2)
     delta1 = t2 - midnight
-    print('delta1',delta1)
+    
     milliseconds = delta1.total_seconds()
-    print('ms',milliseconds)
+   
     mil += milliseconds
     date += delta
     # print(date, chatzos_time.strftime("%H:%M:%S"), end="\n")
@@ -160,7 +178,7 @@ while date <= end_date:
 print("num_days", num_days)
 # Iterate through chatzos_times
 print("mil", mil)
-mil -= 856800
+mil -= extra_seconds*3600
 print("mil", mil)
 average =  mil // num_days
 print("average", round(average))
@@ -199,6 +217,9 @@ seconds %= 3600
 minutes = seconds // 60
 seconds %= 60
 
+
+    
+       
 print("%d:%02d:%02d" % (hour, minutes, seconds))
 print("%d:%02d:%02d" % (hour+7, minutes, seconds))
 
