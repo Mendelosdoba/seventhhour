@@ -97,8 +97,8 @@ else:
 # initialize Nominatim API 
 geolocator = Nominatim(user_agent="your_unique_user_agent") 
   
-place = str(input("type location "))
-print("Location address:", place) 
+place = str(input("Type location: "))
+
 location = geolocator.geocode(place)
 print((location.latitude, location.longitude)) 
 year = int(input("Enter the year: "))
@@ -131,11 +131,13 @@ start_date = datetime(year, 1, 1)
 end_date = datetime(year, 12, 31)
 date_list = [start_date + timedelta(days=x) for x in range((end_date-start_date).days+1)]
 dst_groups = groupby(date_list, lambda d:selected_tz.dst(datetime(year, d.month, d.day)))
+print("groupby", dst_groups)
+#groupby loops date_list and passes each date as parameter d to lambda function
 #lambda short way to write function
 #how to group datelist by running selected_tz with d parameter which we will give 
 #take 2 parameters date_list and how to group list by dst function . the function has d parameter
 dst_counts = [list([offset, len(list(g))]) for offset, g in dst_groups]
-print("S")
+print("dst_counts", dst_counts)
 extra_seconds = 0
 print(dst_counts)
 for i, (offset, count) in enumerate(dst_counts):   
@@ -144,7 +146,7 @@ for i, (offset, count) in enumerate(dst_counts):
 
 import datetime
 delta = datetime.timedelta(days=1)
-year = int(input("Enter the year: "))
+
 month = 1
 day = 1
 date = datetime.date(year, month, day)
@@ -192,21 +194,25 @@ print("average", round(average))
 
 
 
-def seconds_to_time(average):
+def seconds_to_time(average, additional_hours=0):
     hours, remainder = divmod(average, 3600)
+    print(hours)
+    print(remainder)
     minutes, seconds = divmod(remainder, 60)
+    
 
     # Determine whether it's AM or PM
     period = "am" if hours < 12 else "pm"
 
     # Convert to 12-hour format
-    if hours == 0:
-        hours = 12
-    elif hours > 12:
+    if hours + additional_hours < 12:
+        period = "am"
+    elif hours + additional_hours > 12:
         hours -= 12
-
+        period = "pm"
     
-    return f"{int(hours):02d}:{int(minutes):02d} {period}"
+    hours += additional_hours
+    return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d} {period}"
 time_representation = seconds_to_time(average)
 print("time_representation", time_representation)
 seconds = average
@@ -218,12 +224,13 @@ minutes = seconds // 60
 seconds %= 60
 
 
-    
        
 print("%d:%02d:%02d" % (hour, minutes, seconds))
 print("%d:%02d:%02d" % (hour+7, minutes, seconds))
+time_representation_plus_6 = seconds_to_time(average, additional_hours=6)
+time_representation_plus_7 = seconds_to_time(average, additional_hours=7)
 
-print(f"we don't make kiddush between {int(hour+6):02d}:{int(minutes):02d}:{int(seconds):02d} & {int(hour+7):02d}:{int(minutes):02d}:{int(seconds):02d} for {place}")
+print("we don't make kiddush between", time_representation_plus_6, "&", time_representation_plus_7, "for", place, "if we go by mean Chatzos")
 #formatted_time = average.strftime("%H:%M:%S")
 #new_time = average + datetime.timedelta(hours=6)
 #new_time1 = average + datetime.timedelta(hours=7)
